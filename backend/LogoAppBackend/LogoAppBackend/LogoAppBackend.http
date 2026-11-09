@@ -1,0 +1,6 @@
+#@LogoAppBackend_HostAddress = http://localhost:5252
+#
+#GET {{LogoAppBackend_HostAddress}}/weatherforecast/
+#Accept: application/json
+#
+####
