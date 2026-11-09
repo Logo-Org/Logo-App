@@ -1,0 +1,15 @@
+services:
+  database:
+    restart: unless-stopped
+    environment:
+      POSTGRES_PASSWORD: ${DB_ADMIN_PASSWORD:-postgresdev}
+      APP_DB_PASSWORD: ${DB_PASSWORD:-logoappdev}
+    ports:
+      - "127.0.0.1:5432:5432"
+  backend:
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__Default: "Host=database;Port=5432;Database=logoapp;Username=logoapp;Password=${DB_PASSWORD:-logoappdev}"
+    ports:
+      - "8080:8080"
+  
