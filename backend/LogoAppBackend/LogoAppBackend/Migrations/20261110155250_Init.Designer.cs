@@ -13,7 +13,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace LogoAppBackend.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20261109235641_Init")]
+    [Migration("20261110155250_Init")]
     partial class Init
     {
         /// <inheritdoc />
@@ -106,7 +106,7 @@ namespace LogoAppBackend.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
-                    b.Property<long?>("AdminId")
+                    b.Property<long>("AdminId")
                         .HasColumnType("bigint");
 
                     b.Property<TimeSpan>("Duration")
@@ -153,10 +153,16 @@ namespace LogoAppBackend.Migrations
                     b.Property<string>("Response")
                         .HasColumnType("text");
 
+                    b.Property<long>("SessionId")
+                        .HasColumnType("bigint");
+
                     b.Property<byte[]>("VideoRecording")
                         .HasColumnType("bytea");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("SessionId")
+                        .IsUnique();
 
                     b.ToTable("Issue");
                 });
@@ -223,20 +229,15 @@ namespace LogoAppBackend.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
-                    b.Property<long?>("IssueId")
+                    b.Property<long>("TherapyTaskId")
                         .HasColumnType("bigint");
 
-                    b.Property<long>("TaskId")
-                        .HasColumnType("bigint");
-
-                    b.Property<DateTime>("TimeStamp")
+                    b.Property<DateTime>("Timestamp")
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("IssueId");
-
-                    b.HasIndex("TaskId");
+                    b.HasIndex("TherapyTaskId");
 
                     b.ToTable("Session");
                 });
@@ -265,52 +266,6 @@ namespace LogoAppBackend.Migrations
                     b.HasDiscriminator<string>("Discriminator").HasValue("Tag");
 
                     b.UseTphMappingStrategy();
-                });
-
-            modelBuilder.Entity("LogoAppBackend.Entities.Task", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
-
-                    b.Property<long>("ExerciseId")
-                        .HasColumnType("bigint");
-
-                    b.Property<int>("MaxSessionPerPeriod")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime>("PeriodEndTime")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime>("PeriodStartTime")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int>("Repetition")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("Series")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("TaskStatus")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
-
-                    b.Property<long>("TherapyPlanId")
-                        .HasColumnType("bigint");
-
-                    b.Property<DateTime>("TimeStamp")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ExerciseId");
-
-                    b.HasIndex("TherapyPlanId");
-
-                    b.ToTable("Task");
                 });
 
             modelBuilder.Entity("LogoAppBackend.Entities.TherapyPlan", b =>
@@ -372,6 +327,52 @@ namespace LogoAppBackend.Migrations
                     b.HasIndex("TherapyPlanId");
 
                     b.ToTable("TherapyStage");
+                });
+
+            modelBuilder.Entity("LogoAppBackend.Entities.TherapyTask", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<long>("ExerciseId")
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("MaxSessionsPerPeriod")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("PeriodEndTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("PeriodStartTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("Repetition")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Series")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("TaskStatus")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<long>("TherapyPlanId")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime>("Timestamp")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ExerciseId");
+
+                    b.HasIndex("TherapyPlanId");
+
+                    b.ToTable("Task");
                 });
 
             modelBuilder.Entity("LogoAppBackend.Entities.Admin", b =>
@@ -453,9 +454,10 @@ namespace LogoAppBackend.Migrations
 
                     b.Property<string>("Description")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
 
-                    b.PrimitiveCollection<HashSet<string>>("Links")
+                    b.PrimitiveCollection<List<string>>("Links")
                         .IsRequired()
                         .HasColumnType("text[]");
 
@@ -539,45 +541,35 @@ namespace LogoAppBackend.Migrations
 
             modelBuilder.Entity("LogoAppBackend.Entities.Exercise", b =>
                 {
-                    b.HasOne("LogoAppBackend.Entities.Admin", null)
+                    b.HasOne("LogoAppBackend.Entities.Admin", "Admin")
                         .WithMany("Exercises")
-                        .HasForeignKey("AdminId");
+                        .HasForeignKey("AdminId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Admin");
+                });
+
+            modelBuilder.Entity("LogoAppBackend.Entities.Issue", b =>
+                {
+                    b.HasOne("LogoAppBackend.Entities.Session", "Session")
+                        .WithOne("Issue")
+                        .HasForeignKey("LogoAppBackend.Entities.Issue", "SessionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Session");
                 });
 
             modelBuilder.Entity("LogoAppBackend.Entities.Session", b =>
                 {
-                    b.HasOne("LogoAppBackend.Entities.Issue", "Issue")
-                        .WithMany()
-                        .HasForeignKey("IssueId");
-
-                    b.HasOne("LogoAppBackend.Entities.Task", "Task")
+                    b.HasOne("LogoAppBackend.Entities.TherapyTask", "TherapyTask")
                         .WithMany("Sessions")
-                        .HasForeignKey("TaskId")
+                        .HasForeignKey("TherapyTaskId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Issue");
-
-                    b.Navigation("Task");
-                });
-
-            modelBuilder.Entity("LogoAppBackend.Entities.Task", b =>
-                {
-                    b.HasOne("LogoAppBackend.Entities.Exercise", "Exercise")
-                        .WithMany("Tasks")
-                        .HasForeignKey("ExerciseId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("LogoAppBackend.Entities.TherapyPlan", "TherapyPlan")
-                        .WithMany("Tasks")
-                        .HasForeignKey("TherapyPlanId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Exercise");
-
-                    b.Navigation("TherapyPlan");
+                    b.Navigation("TherapyTask");
                 });
 
             modelBuilder.Entity("LogoAppBackend.Entities.TherapyPlan", b =>
@@ -598,6 +590,25 @@ namespace LogoAppBackend.Migrations
                         .HasForeignKey("TherapyPlanId");
                 });
 
+            modelBuilder.Entity("LogoAppBackend.Entities.TherapyTask", b =>
+                {
+                    b.HasOne("LogoAppBackend.Entities.Exercise", "Exercise")
+                        .WithMany("Tasks")
+                        .HasForeignKey("ExerciseId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("LogoAppBackend.Entities.TherapyPlan", "TherapyPlan")
+                        .WithMany("Tasks")
+                        .HasForeignKey("TherapyPlanId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Exercise");
+
+                    b.Navigation("TherapyPlan");
+                });
+
             modelBuilder.Entity("LogoAppBackend.Entities.Patient", b =>
                 {
                     b.HasOne("LogoAppBackend.Entities.SpeechTherapist", "SpeechTherapist")
@@ -612,9 +623,9 @@ namespace LogoAppBackend.Migrations
                     b.Navigation("Tasks");
                 });
 
-            modelBuilder.Entity("LogoAppBackend.Entities.Task", b =>
+            modelBuilder.Entity("LogoAppBackend.Entities.Session", b =>
                 {
-                    b.Navigation("Sessions");
+                    b.Navigation("Issue");
                 });
 
             modelBuilder.Entity("LogoAppBackend.Entities.TherapyPlan", b =>
@@ -622,6 +633,11 @@ namespace LogoAppBackend.Migrations
                     b.Navigation("Tasks");
 
                     b.Navigation("TherapyStages");
+                });
+
+            modelBuilder.Entity("LogoAppBackend.Entities.TherapyTask", b =>
+                {
+                    b.Navigation("Sessions");
                 });
 
             modelBuilder.Entity("LogoAppBackend.Entities.Admin", b =>

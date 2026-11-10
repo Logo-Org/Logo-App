@@ -9,5 +9,7 @@ public class Issue {
     public byte[]? AudioRecording { get; set; }
     public IssueStatus IssueStatus { get; set; }
     public string? Response { get; set; } = string.Empty;
+    public long SessionId { get; set; }
+    public Session Session { get; set; } = null!;
 
 }

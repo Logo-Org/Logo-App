@@ -7,6 +7,7 @@ public class Exercise {
     public TimeSpan Duration { get; set; }
     public List<string>? StepByStepInstruction { get; set; }
     public HashSet<Tag> Tags { get; set; } = [];
-    public ICollection<Task> Tasks { get; set; } = [];
+    public ICollection<TherapyTask> Tasks { get; set; } = [];
+    public Admin Admin { get; set; }
 
 }

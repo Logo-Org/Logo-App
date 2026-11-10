@@ -10,25 +10,23 @@ if (string.IsNullOrWhiteSpace(connectionString)) {
     throw new InvalidOperationException("Missing default connection string");
 }
 
-// Add services to the container.
+// Add services to the container
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 builder.Services.AddDbContext<AppDbContext>(options => {
     options.UseNpgsql(connectionString, npgsql => npgsql.EnableRetryOnFailure());
 });
 
-// Seed demo data to database.
 if (builder.Environment.IsDevelopment()) {
     builder.Services.AddScoped<DemoDataSeeder>();
 }
 
 WebApplication app = builder.Build();
 
-bool migrate = app.Configuration.GetValue<bool>("Database:Migrate");
-bool seed = app.Configuration.GetValue<bool>("Database:Seed");
-
-// Migrate or Seed demo data to database.
+// Migrate or Seed demo data to database
 if (app.Environment.IsDevelopment()) {
+    bool migrate = app.Configuration.GetValue<bool>("Database:Migrate");
+    bool seed = app.Configuration.GetValue<bool>("Database:ResetAndSeed");
     using IServiceScope scope = app.Services.CreateScope();
     AppDbContext db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     if (seed) {
@@ -44,7 +42,7 @@ if (app.Environment.IsDevelopment()) {
     }
 }
 
-// Configure the HTTP request pipeline.
+// Configure the HTTP request pipeline
 if (app.Environment.IsDevelopment()) {
     app.MapOpenApi();
     app.UseSwaggerUI(options => {

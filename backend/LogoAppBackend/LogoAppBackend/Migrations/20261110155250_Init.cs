@@ -14,24 +14,6 @@ namespace LogoAppBackend.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "Issue",
-                columns: table => new
-                {
-                    Id = table.Column<long>(type: "bigint", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    IssueType = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
-                    Description = table.Column<string>(type: "text", nullable: false),
-                    VideoRecording = table.Column<byte[]>(type: "bytea", nullable: true),
-                    AudioRecording = table.Column<byte[]>(type: "bytea", nullable: true),
-                    IssueStatus = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
-                    Response = table.Column<string>(type: "text", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Issue", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Person",
                 columns: table => new
                 {
@@ -48,8 +30,8 @@ namespace LogoAppBackend.Migrations
                     AccountStatus = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
                     JoinDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     SpeechTherapistId = table.Column<long>(type: "bigint", nullable: true),
-                    Description = table.Column<string>(type: "text", nullable: true),
-                    Links = table.Column<HashSet<string>>(type: "text[]", nullable: true),
+                    Description = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
+                    Links = table.Column<List<string>>(type: "text[]", nullable: true),
                     Address_City = table.Column<string>(type: "text", nullable: true),
                     Address_Country = table.Column<string>(type: "text", nullable: true),
                     Address_Street = table.Column<string>(type: "text", nullable: true),
@@ -136,7 +118,7 @@ namespace LogoAppBackend.Migrations
                     VideoRecordingInstruction = table.Column<byte[]>(type: "bytea", nullable: true),
                     Duration = table.Column<TimeSpan>(type: "interval", nullable: false),
                     StepByStepInstruction = table.Column<List<string>>(type: "text[]", nullable: true),
-                    AdminId = table.Column<long>(type: "bigint", nullable: true)
+                    AdminId = table.Column<long>(type: "bigint", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -145,7 +127,8 @@ namespace LogoAppBackend.Migrations
                         name: "FK_Exercise_Person_AdminId",
                         column: x => x.AdminId,
                         principalTable: "Person",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -224,13 +207,13 @@ namespace LogoAppBackend.Migrations
                 {
                     Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    TimeStamp = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    Timestamp = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     Series = table.Column<int>(type: "integer", nullable: false),
                     Repetition = table.Column<int>(type: "integer", nullable: false),
                     TaskStatus = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
                     PeriodStartTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     PeriodEndTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    MaxSessionPerPeriod = table.Column<int>(type: "integer", nullable: false),
+                    MaxSessionsPerPeriod = table.Column<int>(type: "integer", nullable: false),
                     TherapyPlanId = table.Column<long>(type: "bigint", nullable: false),
                     ExerciseId = table.Column<long>(type: "bigint", nullable: false)
                 },
@@ -279,22 +262,41 @@ namespace LogoAppBackend.Migrations
                 {
                     Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    TimeStamp = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    TaskId = table.Column<long>(type: "bigint", nullable: false),
-                    IssueId = table.Column<long>(type: "bigint", nullable: true)
+                    Timestamp = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    TherapyTaskId = table.Column<long>(type: "bigint", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Session", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Session_Issue_IssueId",
-                        column: x => x.IssueId,
-                        principalTable: "Issue",
-                        principalColumn: "Id");
-                    table.ForeignKey(
-                        name: "FK_Session_Task_TaskId",
-                        column: x => x.TaskId,
+                        name: "FK_Session_Task_TherapyTaskId",
+                        column: x => x.TherapyTaskId,
                         principalTable: "Task",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Issue",
+                columns: table => new
+                {
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    IssueType = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    Description = table.Column<string>(type: "text", nullable: false),
+                    VideoRecording = table.Column<byte[]>(type: "bytea", nullable: true),
+                    AudioRecording = table.Column<byte[]>(type: "bytea", nullable: true),
+                    IssueStatus = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    Response = table.Column<string>(type: "text", nullable: true),
+                    SessionId = table.Column<long>(type: "bigint", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Issue", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Issue_Session_SessionId",
+                        column: x => x.SessionId,
+                        principalTable: "Session",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -325,19 +327,20 @@ namespace LogoAppBackend.Migrations
                 column: "TagsId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Issue_SessionId",
+                table: "Issue",
+                column: "SessionId",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Person_SpeechTherapistId",
                 table: "Person",
                 column: "SpeechTherapistId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Session_IssueId",
+                name: "IX_Session_TherapyTaskId",
                 table: "Session",
-                column: "IssueId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Session_TaskId",
-                table: "Session",
-                column: "TaskId");
+                column: "TherapyTaskId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Task_ExerciseId",
@@ -376,7 +379,7 @@ namespace LogoAppBackend.Migrations
                 name: "ExerciseTag");
 
             migrationBuilder.DropTable(
-                name: "Session");
+                name: "Issue");
 
             migrationBuilder.DropTable(
                 name: "TherapyStage");
@@ -385,7 +388,7 @@ namespace LogoAppBackend.Migrations
                 name: "Tag");
 
             migrationBuilder.DropTable(
-                name: "Issue");
+                name: "Session");
 
             migrationBuilder.DropTable(
                 name: "Task");

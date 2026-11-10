@@ -2,8 +2,6 @@ using LogoAppBackend.Entities;
 
 using Microsoft.EntityFrameworkCore;
 
-using Task = LogoAppBackend.Entities.Task;
-
 namespace LogoAppBackend.Data;
 
 public class AppDbContext : DbContext {
@@ -20,7 +18,7 @@ public class AppDbContext : DbContext {
     public DbSet<Credential> Credential { get; set; }
     public DbSet<TherapyPlan> TherapyPlan { get; set; }
     public DbSet<TherapyStage> TherapyStage { get; set; }
-    public DbSet<Task> Task { get; set; }
+    public DbSet<TherapyTask> TherapyTasks { get; set; }
     public DbSet<Exercise> Exercise { get; set; }
     public DbSet<Session> Session { get; set; }
     public DbSet<Issue> Issue { get; set; }
