@@ -1,0 +1,28 @@
+# Reference: https://hub.docker.com/_/postgres
+services:
+  database:
+    image: postgres:18
+    environment:
+      POSTGRES_DB: logoapp
+      POSTGRES_USER: postgres
+      APP_DB_USER: logoapp
+    volumes:
+      - pgdata:/var/lib/postgresql
+      - ./database/init:/docker-entrypoint-initdb.d:ro,z
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d logoapp"]
+      interval: 3s
+      retries: 20
+
+  backend:
+    build:
+      context: ./backend/LogoAppBackend
+      dockerfile: LogoAppBackend/Dockerfile
+    depends_on:
+      database:
+        condition: service_healthy
+volumes:
+  pgdata:
+
+
+
