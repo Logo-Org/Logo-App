@@ -31,4 +31,8 @@ public class AppDbContext : DbContext {
         configurationBuilder.Properties<Enum>().HaveConversion<string>().HaveMaxLength(50);
     }
 
+    protected override void OnModelCreating(ModelBuilder modelBuilder) {
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
+    }
+
 }

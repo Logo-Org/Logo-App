@@ -1,7 +1,13 @@
+using System.ComponentModel;
+
 namespace LogoAppBackend.Entities;
 
 public enum BodyPartCategory {
 
-    Tongue, Lips
+    [Description("Język")]
+    Tongue,
+
+    [Description("Wargi")]
+    Lips
 
 }

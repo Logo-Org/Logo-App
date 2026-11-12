@@ -44,7 +44,7 @@ public class DemoDataSeeder(AppDbContext database) {
     }
 
 
-    private List<TherapyTask> CreateTherapyTasks(List<Exercise> exercises, List<TherapyPlan> therapyPlans) {
+    private static List<TherapyTask> CreateTherapyTasks(List<Exercise> exercises, List<TherapyPlan> therapyPlans) {
         return [
             new TherapyTask {
                 Timestamp = new DateTime(2026, 11, 4, 12, 0, 0, DateTimeKind.Utc),
@@ -86,9 +86,11 @@ public class DemoDataSeeder(AppDbContext database) {
         return [
             new Disorder {
                 Description = "Seplenienie międzyzębowe – język wsuwa się między zęby przy głoskach syczących",
-                DisorderCategory = DisorderCategory.Tongue
+                DisorderCategory = DisorderCategory.Kappacism
             },
-            new Disorder { Description = "Osłabione napięcie mięśni warg.", DisorderCategory = DisorderCategory.Lips }
+            new Disorder {
+                Description = "Osłabione napięcie mięśni warg.", DisorderCategory = DisorderCategory.Rhotacism
+            }
         ];
     }
 
@@ -112,7 +114,7 @@ public class DemoDataSeeder(AppDbContext database) {
         List<Admin> admins) {
         return [
             new Exercise {
-                VideoRecordingInstruction = [0x00, 0x00, 0x00, 0x18, 0x66, 0x74, 0x79, 0x70],
+                VideoRecordingInstruction = "\0\0\0\u0018ftypmp42"u8.ToArray(),
                 Duration = TimeSpan.FromMinutes(2),
                 Tags = [bodyParts[0], speechSounds[0]],
                 StepByStepInstruction = [
@@ -182,11 +184,13 @@ public class DemoDataSeeder(AppDbContext database) {
         return [
             new Credential {
                 DocumentStatus = DocumentStatus.Verified,
+                DocumentType = DocumentType.DegreeStudies,
                 Document = "%PDF-1.7"u8.ToArray(),
                 SpeechTherapist = speechTherapists[0]
             },
             new Credential {
-                DocumentStatus = DocumentStatus.Unverified,
+                DocumentStatus = DocumentStatus.Rejected,
+                DocumentType = DocumentType.Specialization,
                 Document = "%PDF-1.4"u8.ToArray(),
                 SpeechTherapist = speechTherapists[1]
             }
@@ -198,8 +202,8 @@ public class DemoDataSeeder(AppDbContext database) {
             new Issue {
                 IssueType = IssueType.TooDifficult,
                 Description = "Nie potrafię utrzymać języka przy podniebieniu dłużej niż kilka sekund",
-                VideoRecording = [0x00, 0x00, 0x00, 0x18, 0x66, 0x74, 0x79, 0x70],
-                AudioRecording = [0x49, 0x44, 0x33, 0x04],
+                VideoRecording = "\0\0\0\u0018ftypmp42"u8.ToArray(),
+                AudioRecording = "ID3"u8.ToArray(),
                 IssueStatus = IssueStatus.Closed,
                 Response = "Proszę skrócić serię do 15 sekund i stopniowo ją wydłużać",
                 Session = sessions[0]
